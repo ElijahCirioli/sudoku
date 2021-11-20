@@ -21,7 +21,7 @@ class StatsTracker:
 def board_from_string(string):
     """ Turns an input string into a 2D list. This is really just to make printing easier """
 
-    arr = string.replace("\n", " ").split(" ")
+    arr = string.replace(" \n", " ").replace("\n", " ").split(" ")
     n = math.floor(math.sqrt(len(arr)))
 
     board = []
@@ -151,8 +151,10 @@ def solve(V, stats):
 
     # the board couldn't be solved through deduction so make guesses
 
-    # sort roughly by how confident we can be that a guess will be correct
-    # there is some randomness in this
+    """ sort roughly by how confident we can be that a guess will be correct. 
+    there's some randomness in this which is cool. Improving how these are 
+    prioritized could speed things up significantly. """
+
     V.sort(key=guess_confidence)
 
     # save current state of the board for backtracking
