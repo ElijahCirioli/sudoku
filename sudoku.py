@@ -1,6 +1,7 @@
 import math
 import sys
 import os
+import time
 
 
 class Node:
@@ -42,6 +43,7 @@ def board_from_string(string):
 
 def print_board(board, n):
     """ Prints out a 2D list representing a board """
+
     m = math.floor(math.sqrt(n))
     for y, row in enumerate(board):
         for x, node in enumerate(row):
@@ -70,7 +72,7 @@ def create_graph(board, n):
     for y in range(n):
         for x in range(n):
             cell = board[y][x]
-            # don't both creating adjacencies for solved cells
+            # don't bother creating adjacencies for solved cells
             if len(cell.chars) > 1:
                 # columns
                 for dy in range(n):
@@ -92,6 +94,8 @@ def create_graph(board, n):
 
 
 def num_adjacent_possibilities(v):
+    """ Returns the total number of possibilities for all adjacent cells """
+
     # this could be made faster by not computing each time
     count = 0
     for u in v.adj:
@@ -100,7 +104,9 @@ def num_adjacent_possibilities(v):
 
 
 def guess_confidence(v):
-    # this is also doing some redundant calculation but it's not upper-bounding our function
+    """ Returns an approximate value for how impactful a guess for v will be """
+
+    # this is also doing some redundant calculation but it's not what's upper-bounding our algorithm
     return len(v.chars) + num_adjacent_possibilities(v)
 
 
@@ -183,17 +189,28 @@ if len(sys.argv) < 2:
     print("Expected argument for input filename")
 else:
     if sys.argv[1].endswith(".txt"):
+        # read in the .txt file
         input_path = os.path.join(sys.argv[1])
         with open(input_path, "r") as f:
+            # convert to a 2D list
             board, n = board_from_string(f.read())
             print_board(board, n)
             print("Attempting to solve...\n")
+            # convert to the form that we actually care about for this
             graph = create_graph(board, n)
             stats = StatsTracker()
-            if solve(graph, stats):
+
+            # start timer in ms
+            start_time = time.monotonic_ns() // (10 ** 6)
+            solvable = solve(graph, stats)
+            end_time = time.monotonic_ns() // (10 ** 6)
+            if solvable:
                 print_board(board, n)
             else:
                 print("The board is unsolvable")
+
+            # print out stats
+            print(f"Time: {end_time - start_time}ms")
             print(f"Cells examined: {stats.cells_examined}")
             print(f"Max guess depth: {stats.max_depth}")
             print(f"Number of guesses: {stats.guesses}")
